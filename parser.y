@@ -34,8 +34,8 @@ prog : stmlist {}
 stm : ID ASSIGN ID             {printf("%s := %s\n",$1,$3);}
     | WHILE ID DO stm			{printf("%s := %s\n",$2,$4);}
 	| B_BEGIN stmlist B_END	    {}
-	| IF ID stm 			    {printf("R6\n");}
-	| IF ID stm ELSE stm	    {printf("R7\n");}
+	| IF ID THEN stm 			    {printf("R6\n");}
+	| IF ID THEN stm ELSE stm	    {printf("R7\n");}
     | CASE ID stm              {printf("%s := %s\n",$2,$3);}
     | FOR ID stm            	{printf("%s := %s\n",$2,$3);}
     | INTTOSTR ID stm          {printf("%s := %s\n",$2,$3);}

@@ -83,12 +83,14 @@
 
 %%
 
-int yyerror(char *s) { printf("Linha: %d, com erro: %s.\n",yylineno, s);}
+//int yyerror(char *s) { printf("Linha: %d, com erro: %s.\n",yylineno, s);}
 #ifndef yywrap
     int yywrap (void) {return 1;}
 #endif
 
+/*
 int main(void){
     yylex();
     return 0;
 }
+*/
