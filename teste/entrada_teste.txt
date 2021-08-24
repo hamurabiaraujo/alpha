@@ -1,0 +1,7 @@
+---------------
+se (a) entao
+  se (b) entao
+     b <- a
+  senao
+     c <- b
+--------------

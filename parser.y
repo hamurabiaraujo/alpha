@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include <string.h>
 
 int yylex(void);
 int yyerror(char *s);
@@ -34,8 +35,24 @@ prog : stmlist {}
 stm : ID ASSIGN ID             {printf("%s := %s\n",$1,$3);}
     | WHILE ID DO stm			{printf("%s := %s\n",$2,$4);}
 	| B_BEGIN stmlist B_END	    {}
-	| IF ID THEN stm 			    {printf("R6\n");}
-	| IF ID THEN stm ELSE stm	    {printf("R7\n");}
+	
+    | IF ID THEN stm {
+        int size = 12 + strlen($2) + strlen($4);
+        char * s = malloc(sizeof(char) * size);
+        sprintf(s, "if (%s) {\n\t %s\n}", $2, $4);
+        free($4);
+        $$ = s;
+	  };
+
+	| IF ID THEN stm ELSE stm {
+        int size = 22 + strlen($2) + strlen($4) + strlen($6);
+        char * s = malloc(sizeof(char) * size);
+        sprintf(s, "if (%s) {\n\t %s\n }else{\n\t %s}", $2, $4, $6);
+        free($4);
+        free($6);
+        $$ = s;
+	  };
+      
     | CASE ID stm              {printf("%s := %s\n",$2,$3);}
     | FOR ID stm            	{printf("%s := %s\n",$2,$3);}
     | INTTOSTR ID stm          {printf("%s := %s\n",$2,$3);}
