@@ -42,7 +42,7 @@ Para gerar o compilador final da linguagem responsável por ler arquivos escrito
 ### Criação do analisador léxico
 
 ```
-lex lexico.c
+lex lexico.l
 ```
 
 ### Criação do analisador sintático
@@ -55,6 +55,12 @@ yacc parser.y -d -v -g
  
 ```
 gcc lex.yy.c y.tab.c -o alpha.exe
+```
+
+### Versão encurtada para compilação completa
+
+```
+lex lexico.l && yacc parser.y -d -v -g && gcc lex.yy.c y.tab.c -o alpha.exe
 ```
 
 ### Compilando código Alpha
