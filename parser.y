@@ -23,14 +23,15 @@ extern char * yytext;
 %token <iValue> NUMBER
 %token INT FLOAT STRING PROGRAM ADD MUL REL VAR BOOL THEN ASSING READ WRITE 
 %token IF ELSE WHILE DO B_BEGIN B_END SWIT CASE FOR 
-%token VOID STATIC CONST DEFAULT BREAK CONTINUE EXIT QUIT RETURN 
+%token VOID STATIC CONST DEFAULT BREAK CONTINUE EXIT RETURN 
 %token PRINT SCAN MALLOC FREE INCLUDE
 %token INTTOSTR STRTOINT FLOATTOSTR STRTOFLOAT INTTOFLOAT FLOATTOINT 
 %token SUM SUB DIV MULT IQUAL ASSIGN SUMIQ SUBIQ SUMS SUBS IQUALS DIFS BIG SMA BIGS SMAS NOT AND OR PARL PARR KEYL KEYR SEMI BRAL BRAR VIRGULA
 
 %start prog
 
-%type <sValue> stm stmlist expr decls decl
+%type <sValue> stm stmlist expr decls decl ids
+
 
 %%
 prog : decls stmlist {
@@ -39,6 +40,7 @@ prog : decls stmlist {
         free($1);
         free($2);
     };
+
 
 decls :  decl       {$$ = $1;}
        | decl decls {
@@ -116,20 +118,26 @@ stm : ID ASSIGN expr {
         $$ = s;
     }
       
-    | CASO stm {
+    | CASE stm {
         int size = 11 + strlen($2);
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "case {\n\t %s\n}", $2);
-        free($3);
+        free($2);
         $$ = s;
     }
 
     | BREAK {
-        $$ = $1;
+        int size = 7;
+        char * s = malloc(sizeof(char) * size);
+        sprintf(s, "break; /n");
+        $$ = s;
     }
 
     | DEFAULT {
-        $$ = $1;
+        int size = 9;
+        char * s = malloc(sizeof(char) * size);
+        sprintf(s, "default; /n");
+        $$ = s;
     }
 
     | FOR ID stm {
@@ -139,7 +147,7 @@ stm : ID ASSIGN expr {
         free($3);
         $$ = s;
     }
-    | INTTOSTR ID stm          {printf("%s := %s\n",$2,$3);}
+    
     | STRTOINT ID stm          {printf("%s := %s\n",$2,$3);}
     | FLOATTOSTR ID stm        {printf("%s := %s\n",$2,$3);}
     | STRTOFLOAT ID stm        {printf("%s := %s\n",$2,$3);}
@@ -149,45 +157,50 @@ stm : ID ASSIGN expr {
         int size = 12 + strlen($2);
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "printf (\n %s\n)", $2);
-        free($3);
+        free($2);
         $$ = s;
     }
     | SCAN stm {
         int size = 12 + strlen($2);
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "scanf (\n %s\n)", $2);
-        free($3);
+        free($2);
         $$ = s;
     }
     | RETURN ID {
         int size = 10 + strlen($2);
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "return \n %s\n", $2);
-        free($3);
+        free($2);
         $$ = s;
     }
     | MALLOC stm {
         int size = 10 + strlen($2);
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "malloc ( %s )\n", $2);
-        free($3);
+        free($2);
         $$ = s;
     }
     | FREE stm {
         int size = 9 + strlen($2);
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "free ( %s )\n", $2);
-        free($3);
+        free($2);
         $$ = s;
     }
-    | QUIT {
-        $$ = $1;
-    }
+
     | CONTINUE {
-        $$ = $1;
+        int size = 10;
+        char * s = malloc(sizeof(char) * size);
+        sprintf(s, "continue; /n");
+        $$ = s;
     }
+
     | EXIT {
-        $$ = $1;
+        int size = 9;
+        char * s = malloc(sizeof(char) * size);
+        sprintf(s, "exit(0); /n");
+        $$ = s;
     }
 	
 stmlist : stm					{$$ = $1;}
@@ -198,7 +211,7 @@ stmlist : stm					{$$ = $1;}
             free($1);
             free($3);
             $$ = s;
-        }
+        };
 
 expr : ID           {$$ = $1;}
     | ID SUM expr {

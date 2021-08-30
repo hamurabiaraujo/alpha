@@ -36,7 +36,6 @@
 "break"                   { return(BREAK); }
 "continue"                { return(CONTINUE); }
 "exit"                    { return(EXIT); }
-"quit"                    { return(QUIT); }
 "return"                  { return(RETURN); }
 "print"                   { return(PRINT); }
 "scan"                    { return(SCAN); }
