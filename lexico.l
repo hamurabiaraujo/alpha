@@ -23,7 +23,6 @@
 "else"                    { return(ELSE); }
 "then"                    { return(THEN); }
 "while"                   { return(WHILE); }
-"do"                      { return(DO); }
 "begin"                   { return(B_BEGIN); }
 "end"                     { return(B_END); }
 "swit"                    { return(SWIT); }

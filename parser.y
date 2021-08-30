@@ -22,7 +22,7 @@ extern char * yytext;
 %token <sValue> ID TYPE
 %token <iValue> NUMBER
 %token INT FLOAT STRING PROGRAM ADD MUL REL VAR BOOL THEN ASSING READ WRITE 
-%token IF ELSE WHILE DO B_BEGIN B_END SWIT CASE FOR 
+%token IF ELSE WHILE B_BEGIN B_END SWIT CASE FOR 
 %token VOID STATIC CONST DEFAULT BREAK CONTINUE EXIT RETURN 
 %token PRINT SCAN MALLOC FREE INCLUDE
 %token INTTOSTR STRTOINT FLOATTOSTR STRTOFLOAT INTTOFLOAT FLOATTOINT 
@@ -30,7 +30,7 @@ extern char * yytext;
 
 %start prog
 
-%type <sValue> stm stmlist expr decls decl ids
+%type <sValue> stm stmlist expr decls decl ids bloco invoker args opera
 
 
 %%
@@ -77,23 +77,15 @@ stm : ID ASSIGN expr {
         $$ = s;
     }
 
-    | WHILE ID DO stm {
+    | WHILE expr B_BEGIN bloco B_END { 
         int size = 16 + strlen($2) + strlen($4);
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "while (%s) {\n\t %s\n}", $2, $4);
         free($4);
         $$ = s;
     }
-
-	| B_BEGIN stmlist B_END	{
-        int size = strlen($2)+7;
-        char * s = malloc(sizeof(char) * size);
-        sprintf(s,"\n{ \n%s \n}", $2);
-        free($2);
-        $$ = s;
-    }
 	
-    | IF ID THEN stm { 
+    | IF expr THEN bloco { 
         int size = 13 + strlen($2) + strlen($4);
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "if (%s) {\n\t %s\n}", $2, $4);
@@ -101,7 +93,7 @@ stm : ID ASSIGN expr {
         $$ = s;
     }
 
-	| IF ID THEN stm ELSE stm {
+	| IF expr THEN bloco ELSE bloco {
         int size = 24 + strlen($2) + strlen($4) + strlen($6);
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "if (%s) {\n\t %s\n }else{\n\t %s}", $2, $4, $6);
@@ -140,7 +132,7 @@ stm : ID ASSIGN expr {
         $$ = s;
     }
 
-    | FOR ID stm {
+    | FOR expr stm {
         int size = 11 + strlen($2) + strlen($3);
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "for (%s) {\n\t %s\n}", $2, $3);
@@ -148,11 +140,6 @@ stm : ID ASSIGN expr {
         $$ = s;
     }
     
-    | STRTOINT ID stm          {printf("%s := %s\n",$2,$3);}
-    | FLOATTOSTR ID stm        {printf("%s := %s\n",$2,$3);}
-    | STRTOFLOAT ID stm        {printf("%s := %s\n",$2,$3);}
-    | INTTOFLOAT ID stm        {printf("%s := %s\n",$2,$3);}
-    | FLOATTOINT ID stm        {printf("%s := %s\n",$2,$3);}
     | PRINT stm {
         int size = 12 + strlen($2);
         char * s = malloc(sizeof(char) * size);
@@ -202,6 +189,9 @@ stm : ID ASSIGN expr {
         sprintf(s, "exit(0); /n");
         $$ = s;
     }
+
+bloco : { }
+        | stmlist {$$ = $1;};
 	
 stmlist : stm					{$$ = $1;}
 		| stmlist SEMI stm		{
@@ -213,8 +203,39 @@ stmlist : stm					{$$ = $1;}
             $$ = s;
         };
 
-expr : ID           {$$ = $1;}
-    | ID SUM expr {
+expr : ID {$$ = $1;}
+    | opera {$$ = $1;}
+    | opera IQUALS opera {
+        int size = strlen($1) + strlen($3) + 5;
+        char * s = malloc(sizeof(char) * size);
+        sprintf(s, "%s == %s", $1,$3);
+        free($3);
+        $$ = s;
+    }
+    | opera DIFS opera {
+        int size = strlen($1) + strlen($3) + 5;
+        char * s = malloc(sizeof(char) * size);
+        sprintf(s, "%s != %s", $1,$3);
+        free($3);
+        $$ = s;
+    }
+    | invoker {
+        $$ = $1;
+    };
+
+invoker : ID PARL args PARR {
+    int size = strlen($1) + strlen($3) + 5;
+    char * s = malloc(sizeof(char) * size);
+    sprintf(s, "%s (%s)", $1,$3);
+    free($3);
+    $$ = s;
+};
+
+args : ID {
+        $$ = $1;
+    };
+
+opera : ID SUM expr {
         int size = strlen($1) + strlen($3) + 4;
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "%s + %s", $1,$3);
