@@ -244,8 +244,18 @@ expr : ID           {$$ = $1;}
     };
 %%
 
-int main (void) {
-	return yyparse ( );
+int main (int argc, char *argv[]) {
+    FILE *fp;
+
+    if((fp=fopen(argv[1],"w"))==NULL){
+        printf("Erro ao abrir o arquivo");
+    }
+    else
+    {
+	    return yyparse ( );
+    }
+
+    fclose(fp);
 }
 
 int yyerror (char *msg) {
