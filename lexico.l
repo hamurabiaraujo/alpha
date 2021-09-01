@@ -8,7 +8,7 @@
 %%
 
 [ \t\n]                   ;
-[0-9]+                    { yylval.iValue = atoi(yytext); return NUMBER;}            
+[0-9]+                    { yylval.iValue = atoi(yytext); return INT;}            
 "program"                 { return(PROGRAM);}
 "type"                    { yylval.sValue = strdup(yytext); return (TYPE); }
 "var"                     { return(VAR); }
@@ -25,7 +25,7 @@
 "while"                   { return(WHILE); }
 "begin"                   { return(B_BEGIN); }
 "end"                     { return(B_END); }
-"swit"                    { return(SWIT); }
+"switch"                  { return(SWITCH); }
 "case"                    { return(CASE); }
 "for"                     { return(FOR); }
 "void"                    { return(VOID); }
@@ -83,7 +83,6 @@
 
 %%
 
-//int yyerror(char *s) { printf("Linha: %d, com erro: %s.\n",yylineno, s);}
 #ifndef yywrap
     int yywrap (void) {return 1;}
 #endif

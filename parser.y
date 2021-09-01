@@ -4,6 +4,7 @@
 
 int yylex(void);
 int yyerror(char *s);
+
 extern int yylineno;
 extern char * yytext;
 
@@ -13,16 +14,22 @@ extern char * yytext;
 
 // TODO: criar regras de precedência
 
+
 %union {
 	int    iValue; 	/* integer value */
+    float  fValue;  /* float value */
 	char   cValue; 	/* char value */
 	char * sValue;  /* string value */
-	};
+};
+
+%left '+' '-' 
+%left '*' '/'
 
 %token <sValue> ID TYPE
-%token <iValue> NUMBER
-%token INT FLOAT STRING PROGRAM ADD MUL REL VAR BOOL THEN ASSING READ WRITE 
-%token IF ELSE WHILE B_BEGIN B_END SWIT CASE FOR 
+%token <iValue> INT
+%token <fValue> FLOAT
+%token STRING PROGRAM ADD MUL REL VAR BOOL THEN ASSING READ WRITE 
+%token IF ELSE WHILE B_BEGIN B_END SWITCH CASE FOR 
 %token VOID STATIC CONST DEFAULT BREAK CONTINUE EXIT RETURN 
 %token PRINT SCAN MALLOC FREE INCLUDE
 %token INTTOSTR STRTOINT FLOATTOSTR STRTOFLOAT INTTOFLOAT FLOATTOINT 
@@ -32,9 +39,8 @@ extern char * yytext;
 
 %type <sValue> stm stmlist expr decls decl ids bloco invoker args opera
 
-
 %%
-prog : decls stmlist {
+prog : decls bloco {
         printf("%s \n%s", $1, $2);
         printf("\nAplicação encerrada");
         free($1);
@@ -44,7 +50,7 @@ prog : decls stmlist {
 
 decls :  decl       {$$ = $1;}
        | decl decls {
-           int size = strlen($1) + strlen($2) + 2;
+           int size = 1 + strlen($1) + strlen($2);
            char * s = malloc(sizeof(char) * size);
            sprintf(s, "%s\n%s", $1, $2);
            free($1);
@@ -53,16 +59,21 @@ decls :  decl       {$$ = $1;}
        };
 
 decl : TYPE ids {
-           int size = strlen($1) + strlen($2) + 2;
+           int size = 1 + strlen($1) + strlen($2);
            char * s = malloc(sizeof(char) * size);
            sprintf(s, "%s %s", $1, $2);
+           free($1);
            free($2);
            $$ = s;
-      };
+    }
+
+    | INT ids { }
+    | FLOAT ids { }
+
 
 ids :  ID           {$$ = $1;}
      | ID VIRGULA ids {
-           int size = strlen($1) + strlen($3) + 3;
+           int size = 2 + strlen($1) + strlen($3) + 3;
            char * s = malloc(sizeof(char) * size);
            sprintf(s, "%s, %s", $1, $3);
            free($3);
@@ -70,7 +81,7 @@ ids :  ID           {$$ = $1;}
       };
 
 stm : ID ASSIGN expr {
-        int size = strlen($1) + strlen($3) + 5;
+        int size = 4 + strlen($1) + strlen($3) + 5;
         char * s = malloc(sizeof(char) * size);
         sprintf(s,"%s = %s%c\n",$1,$3, 59);
         free($3);
@@ -102,7 +113,7 @@ stm : ID ASSIGN expr {
         $$ = s;
     }
 
-    | SWIT ID stm {
+    | SWITCH ID stm {
         int size = 15 + strlen($2) + strlen($3);
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "switch (%s) {\n\t %s\n}", $2, $3);
@@ -119,21 +130,21 @@ stm : ID ASSIGN expr {
     }
 
     | BREAK {
-        int size = 7;
+        int size = 8;
         char * s = malloc(sizeof(char) * size);
-        sprintf(s, "break; /n");
+        sprintf(s, "break; \n");
         $$ = s;
     }
 
     | DEFAULT {
-        int size = 9;
+        int size = 10;
         char * s = malloc(sizeof(char) * size);
-        sprintf(s, "default; /n");
+        sprintf(s, "default; \n");
         $$ = s;
     }
 
     | FOR expr stm {
-        int size = 11 + strlen($2) + strlen($3);
+        int size = 14 + strlen($2) + strlen($3);
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "for (%s) {\n\t %s\n}", $2, $3);
         free($3);
@@ -147,6 +158,7 @@ stm : ID ASSIGN expr {
         free($2);
         $$ = s;
     }
+
     | SCAN stm {
         int size = 12 + strlen($2);
         char * s = malloc(sizeof(char) * size);
@@ -154,6 +166,7 @@ stm : ID ASSIGN expr {
         free($2);
         $$ = s;
     }
+
     | RETURN ID {
         int size = 10 + strlen($2);
         char * s = malloc(sizeof(char) * size);
@@ -161,6 +174,7 @@ stm : ID ASSIGN expr {
         free($2);
         $$ = s;
     }
+
     | MALLOC stm {
         int size = 10 + strlen($2);
         char * s = malloc(sizeof(char) * size);
@@ -168,6 +182,7 @@ stm : ID ASSIGN expr {
         free($2);
         $$ = s;
     }
+
     | FREE stm {
         int size = 9 + strlen($2);
         char * s = malloc(sizeof(char) * size);
@@ -195,7 +210,7 @@ bloco : { }
 	
 stmlist : stm					{$$ = $1;}
 		| stmlist SEMI stm		{
-            int size = strlen($1) + strlen($3) + 2;
+            int size = 1 + strlen($1) + strlen($3) + 2;
             char * s = malloc(sizeof(char) * size);
             sprintf(s, "%s;%s", $1,$3);
             free($1);
@@ -206,14 +221,14 @@ stmlist : stm					{$$ = $1;}
 expr : ID {$$ = $1;}
     | opera {$$ = $1;}
     | opera IQUALS opera {
-        int size = strlen($1) + strlen($3) + 5;
+        int size = 4 + strlen($1) + strlen($3) + 5;
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "%s == %s", $1,$3);
         free($3);
         $$ = s;
     }
     | opera DIFS opera {
-        int size = strlen($1) + strlen($3) + 5;
+        int size = 4 + strlen($1) + strlen($3) + 5;
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "%s != %s", $1,$3);
         free($3);
@@ -224,7 +239,7 @@ expr : ID {$$ = $1;}
     };
 
 invoker : ID PARL args PARR {
-    int size = strlen($1) + strlen($3) + 5;
+    int size = 3 + strlen($1) + strlen($3);
     char * s = malloc(sizeof(char) * size);
     sprintf(s, "%s (%s)", $1,$3);
     free($3);
@@ -236,28 +251,28 @@ args : ID {
     };
 
 opera : ID SUM expr {
-        int size = strlen($1) + strlen($3) + 4;
+        int size = 3 + strlen($1) + strlen($3) + 4;
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "%s + %s", $1,$3);
         free($3);
         $$ = s;
     }
     | ID SUB expr {
-        int size = strlen($1) + strlen($3) + 4;
+        int size = 3 - strlen($1) + strlen($3) + 4;
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "%s - %s", $1,$3);
         free($3);
         $$ = s;
     }
     | ID MULT expr {
-        int size = strlen($1) + strlen($3) + 4;
+        int size = 3 + strlen($1) + strlen($3) + 4;
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "%s * %s", $1,$3);
         free($3);
         $$ = s;
     }
     | ID DIV expr {
-        int size = strlen($1) + strlen($3) + 4;
+        int size = 3 + strlen($1) + strlen($3) + 4;
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "%s / %s", $1,$3);
         free($3);
@@ -265,21 +280,25 @@ opera : ID SUM expr {
     };
 %%
 
-int main (int argc, char *argv[]) {
-    FILE *fp;
+// int main (int argc, char *argv[]) {
+//     FILE *fp;
 
-    if((fp=fopen(argv[1],"w"))==NULL){
-        printf("Erro ao abrir o arquivo");
-    }
-    else
-    {
-	    return yyparse ( );
-    }
+//     if((fp=fopen(argv[1],"w"))==NULL){
+//         printf("Erro ao abrir o arquivo");
+//     }
+//     else
+//     {
+// 	    return yyparse ( );
+//     }
 
-    fclose(fp);
+//     fclose(fp);
+// }
+
+int main (void) {
+	return yyparse ( );
 }
 
 int yyerror (char *msg) {
-	fprintf (stderr, "%d: %s at '%s'\n", yylineno, msg, yytext);
+	fprintf (stderr, "%4d: %s na linha '%s'\n", ++yylineno, msg, yytext);
 	return 0;
 }
