@@ -50,7 +50,7 @@ extern char * yytext;
 %left SUM SUB
 %left MULT DIV
 %nonassoc UMINUS 
-%nonassoc IFX
+%nonassoc IFX 
 %nonassoc ELSE 
 
 %start prog
@@ -120,7 +120,7 @@ stm : expr { $$ = $1; }
         $$ = s;
     }
 	
-    | IF expr THEN bloco { 
+    | IF expr THEN bloco %prec IFX { 
         int size = 13 + strlen($2) + strlen($4);
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "if (%s) {\n\t %s\n}", $2, $4);
@@ -185,11 +185,11 @@ stm : expr { $$ = $1; }
         //$$ = opr(PRINT, 1, $3); 
     }
 
-    | SCAN stm {
-        int size = 12 + strlen($2);
+    | SCAN PARL stm PARR {
+        int size = 12 + strlen($3);
         char * s = malloc(sizeof(char) * size);
-        sprintf(s, "scanf (\n %s\n)", $2);
-        free($2);
+        sprintf(s, "scanf (\n %s\n)", $3);
+        free($3);
         $$ = s;
     }
 
@@ -244,13 +244,12 @@ stmlist : stm					{$$ = $1;}
             $$ = s;
         };
 
-expr : ID {$$ = $1;}
-    | opera {$$ = $1;}
-    | opera IQUALS opera {
-        int size = 4 + strlen($1) + strlen($3) + 5;
+expr :  opera {$$ = $1;}
+    /*| opera IQUALS opera {
+        int size = 4 + strlen($1) + strlen($4) + 5;
         char * s = malloc(sizeof(char) * size);
-        sprintf(s, "%s == %s", $1,$3);
-        free($3);
+        sprintf(s, "%s == %s", $1,$4);
+        free($4);
         $$ = s;
     }
     | opera DIFS opera {
@@ -259,7 +258,7 @@ expr : ID {$$ = $1;}
         sprintf(s, "%s != %s", $1,$3);
         free($3);
         $$ = s;
-    }
+    } */
     | invoker {
         $$ = $1;
     };
