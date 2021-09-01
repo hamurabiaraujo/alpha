@@ -1,6 +1,10 @@
 %{
     #include <stdio.h>
     #include "y.tab.h"
+    #include <string.h>
+    #include <stdlib.h> 
+    #include <stdarg.h>
+    #include "alpha.h"
 
     extern int yyerror (char *msg);
 %}
@@ -84,12 +88,8 @@
 %%
 
 #ifndef yywrap
-    int yywrap (void) {return 1;}
+    int yywrap (void) {
+        return 1;
+    }
 #endif
 
-/*
-int main(void){
-    yylex();
-    return 0;
-}
-*/
