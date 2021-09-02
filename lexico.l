@@ -21,6 +21,7 @@
 "rel"                     { return(REL); }
 "int"                     { return(INT); }
 "float"                   { return(FLOAT); }
+"char"                    { return(CHAR); }
 "string"                  { return(STRING); }
 "bool"                    { return(BOOL); }
 "if"                      { return(IF); }

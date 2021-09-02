@@ -34,10 +34,10 @@ extern char * yytext;
     //nodeType *nPtr; /* node pointer */ 
 };
 
-%token <sValue> ID TYPE
+%token <sValue> ID TYPE STRING CHAR
 %token <iValue> INT
 %token <fValue> FLOAT
-%token STRING PROGRAM ADD MUL REL VAR BOOL THEN ASSING READ WRITE 
+%token PROGRAM ADD MUL REL VAR BOOL THEN ASSING READ WRITE 
 %token IF ELSE WHILE B_BEGIN B_END SWITCH CASE FOR 
 %token VOID STATIC CONST DEFAULT BREAK CONTINUE EXIT RETURN 
 %token PRINT SCAN MALLOC FREE INCLUDE
@@ -45,8 +45,8 @@ extern char * yytext;
 %token IQUAL ASSIGN SUMIQ SUBIQ SUMS SUBS NOT AND OR PARL PARR KEYL KEYR SEMI BRAL BRAR VIRGULA
 
 %left BIGS SMAS IQUALS DIFS BIG SMA
-%left '+' '-' 
-%left '*' '/'
+/*%left '+' '-' 
+%left '*' '/'*/
 %left SUM SUB
 %left MULT DIV
 %nonassoc UMINUS 
@@ -55,7 +55,7 @@ extern char * yytext;
 
 %start prog
 
-%type <sValue> stm stmlist expr decls decl ids bloco invoker args opera
+%type <sValue> stm stmlist expr decls decl ids bloco invoker args opera types
 
 
 
@@ -68,8 +68,6 @@ prog : decls bloco {
         free($2);
     };
 
-    
-
 decls :  decl       {$$ = $1;}
        | decl decls {
            int size = 1 + strlen($1) + strlen($2);
@@ -80,17 +78,38 @@ decls :  decl       {$$ = $1;}
            $$ = s;
        };
 
-decl : TYPE ids {
-           int size = 1 + strlen($1) + strlen($2);
-           char * s = malloc(sizeof(char) * size);
-           sprintf(s, "%s %s", $1, $2);
-           free($1);
-           free($2);
-           $$ = s;
-    }
+decl : types {
+           $$ = $1;
+    };
 
-    | INT ids { }
-    | FLOAT ids { }
+types: STRING ids { 
+            int size = 7 + strlen($2);
+            char * s = malloc(sizeof(char) * size);
+            sprintf(s, "string %s", $2);
+            free($2);
+            $$ = s;
+    }
+    | CHAR ids { 
+            int size = 5 + strlen($2);
+            char * s = malloc(sizeof(char) * size);
+            sprintf(s, "char %s", $2);
+            free($2);
+            $$ = s;
+    }
+    | INT ids { 
+            int size = 4 + strlen($2);
+            char * s = malloc(sizeof(char) * size);
+            sprintf(s, "int %s", $2);
+            free($2);
+            $$ = s;
+    }
+    | FLOAT ids { 
+            int size = 6 + strlen($2);
+            char * s = malloc(sizeof(char) * size);
+            sprintf(s, "float %s", $2);
+            free($2);
+            $$ = s;
+    };
 
 
 ids :  ID           {$$ = $1;}
@@ -245,20 +264,6 @@ stmlist : stm					{$$ = $1;}
         };
 
 expr :  opera {$$ = $1;}
-    /*| opera IQUALS opera {
-        int size = 4 + strlen($1) + strlen($4) + 5;
-        char * s = malloc(sizeof(char) * size);
-        sprintf(s, "%s == %s", $1,$4);
-        free($4);
-        $$ = s;
-    }
-    | opera DIFS opera {
-        int size = 4 + strlen($1) + strlen($3) + 5;
-        char * s = malloc(sizeof(char) * size);
-        sprintf(s, "%s != %s", $1,$3);
-        free($3);
-        $$ = s;
-    } */
     | invoker {
         $$ = $1;
     };
@@ -275,7 +280,21 @@ args : ID {
         $$ = $1;
     };
 
-opera : ID SUM expr {
+opera : expr IQUALS expr {
+        int size = 4 + strlen($1) + strlen($3) + 5;
+        char * s = malloc(sizeof(char) * size);
+        sprintf(s, "%s == %s", $1,$3);
+        free($3);
+        $$ = s;
+    }
+    | expr DIFS expr {
+        int size = 4 + strlen($1) + strlen($3) + 5;
+        char * s = malloc(sizeof(char) * size);
+        sprintf(s, "%s != %s", $1,$3);
+        free($3);
+        $$ = s;
+    } 
+    | ID SUM expr {
         int size = 3 + strlen($1) + strlen($3) + 4;
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "%s + %s", $1,$3);
