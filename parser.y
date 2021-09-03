@@ -139,20 +139,20 @@ stm : expr { $$ = $1; }
         $$ = s;
     }
 	
-    | IF expr THEN bloco %prec IFX { 
-        int size = 13 + strlen($2) + strlen($4);
+    | IF expr bloco %prec IFX{ 
+        int size = 13 + strlen($2) + strlen($3);
         char * s = malloc(sizeof(char) * size);
-        sprintf(s, "if (%s) {\n\t %s\n}", $2, $4);
-        free($4);
+        sprintf(s, "if (%s) {\n\t %s\n}", $2, $3);
+        free($3);
         $$ = s;
     }
 
-	| IF expr THEN bloco ELSE bloco {
-        int size = 24 + strlen($2) + strlen($4) + strlen($6);
+	| IF expr bloco ELSE bloco {
+        int size = 24 + strlen($2) + strlen($3) + strlen($5);
         char * s = malloc(sizeof(char) * size);
-        sprintf(s, "if (%s) {\n\t %s\n }else{\n\t %s}", $2, $4, $6);
-        free($4);
-        free($6);
+        sprintf(s, "if (%s) {\n\t %s\n }else{\n\t %s}", $2, $3, $5);
+        free($3);
+        free($5);
         $$ = s;
     }
 

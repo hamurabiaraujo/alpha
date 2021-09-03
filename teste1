@@ -1,0 +1,14 @@
+prog
+
+begin
+    int x
+    int y
+    int z
+
+    scan(x)
+    scan(y)
+    scan(z)
+
+    return (x - y + z)
+
+end
