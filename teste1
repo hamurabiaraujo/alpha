@@ -1,6 +1,4 @@
-prog
-
-begin
+b_begin
     int x
     int y
     int z
@@ -11,4 +9,4 @@ begin
 
     return (x - y + z)
 
-end
+b_end
