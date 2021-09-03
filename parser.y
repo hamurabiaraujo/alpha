@@ -126,8 +126,16 @@ stm : expr { $$ = $1; }
     | ID ASSIGN expr {
         int size = 4 + strlen($1) + strlen($3) + 5;
         char * s = malloc(sizeof(char) * size);
-        sprintf(s,"%s = %s%c\n",$1,$3, 59);
+        sprintf(s,"%s = %s%c\n",$1,$3);
         free($3);
+        $$ = s;
+    }
+
+    | B_BEGIN bloco %prec B_END{
+        int size = 6 + strlen($2);
+        char * s = malloc(sizeof(char) * size);
+        sprintf(s,"{ \n\t %s \n}",$2);
+        free($2);
         $$ = s;
     }
 
