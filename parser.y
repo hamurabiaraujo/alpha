@@ -49,7 +49,7 @@ extern char * yytext;
     ASSING 
     READ 
     WRITE
-%token IF ELSE WHILE B_BEGIN B_END SWITCH CASE FOR 
+%token IF ELSE WHILE B_BEGIN B_END SWITCH CASE FOR FUNC
 %token VOID STATIC CONST DEFAULT BREAK CONTINUE EXIT RETURN 
 %token PRINT SCAN MALLOC FREE INCLUDE
 %token INTTOSTR STRTOINT FLOATTOSTR STRTOFLOAT INTTOFLOAT FLOATTOINT 
@@ -75,8 +75,9 @@ extern char * yytext;
 %left BIGS SMAS IQUALS DIFS BIG SMA
 %left SUM SUB
 %left MULT DIV
-%left PARR OR AND POW ID
-%right PARL
+%left PARR OR AND POW ID SCAN
+%left INTTOSTR STRTOINT FLOATTOSTR STRTOFLOAT INTTOFLOAT FLOATTOINT
+%right PARL VIRGULA
 %right NOT RETURN
 %nonassoc UMINUS 
 %nonassoc IFX B_END
@@ -84,19 +85,55 @@ extern char * yytext;
 
 %start prog
 
-%type <sValue> stm stmlist expr decls decl ids bloco invoker args opera types
+%type <sValue> 
+    stm 
+    stmlist 
+    expr 
+    decls 
+    decl 
+    ids 
+    bloco 
+    invoker 
+    args 
+    opera 
+    types  
+    import
+    importlist
+    arq
 
 %%
 
-prog : PROGRAM B_BEGIN decls bloco B_END {
-        int size = 18 + strlen($3) + strlen($4);
+prog : importlist PROGRAM B_BEGIN decls bloco B_END {
+        int size = 19 + strlen($1) + strlen($4) + strlen($5);
         char * s = malloc(sizeof(char) * size);
-        sprintf(s, "void main() {\n%s\n%s\n}", $3, $4);
+        sprintf(s, "%s\nvoid main() {\n%s\n%s\n}", $1, $4, $5);
 
         printf("\nAplicação encerrada");
-        free($3);
+        free($1);
         free($4);
+        free($5);
     };
+
+import : INCLUDE arq {
+        int size = 10 + strlen($2);
+        char * s = malloc(sizeof(char) * size);
+        sprintf(s, "#include %s\n", $2);
+        free($2);
+        $$ = s;
+    };
+
+importlist : {}
+    | importlist SEMI import {
+        int size = 2 + strlen($1) + strlen($3);
+        char * s = malloc(sizeof(char) * size);
+        sprintf(s, "%s;\n%s", $1,$3);
+        free($1);
+        free($3);
+        $$ = s;
+    };
+
+arq : ID {$$ = $1;};
+
 /*
 prog : decls bloco {
         printf("%s \n%s", $1, $2);
@@ -106,7 +143,7 @@ prog : decls bloco {
     };
     */
 
-decls :  decl       {$$ = $1;}
+decls :  decl {$$ = $1;}
        | decl decls {
            int size = 1 + strlen($1) + strlen($2);
            char * s = malloc(sizeof(char) * size);
@@ -120,7 +157,7 @@ decl : types {
            $$ = $1;
     };
 
-types: STRING ids { 
+types : STRING ids { 
             int size = 7 + strlen($2);
             char * s = malloc(sizeof(char) * size);
             sprintf(s, "string %s", $2);
@@ -193,7 +230,7 @@ stm : expr { $$ = $1; }
         $$ = s;
     }
 
-	| IF expr bloco ELSE bloco {
+	| IF expr bloco ELSE bloco %prec IFX{
         int size = 24 + strlen($2) + strlen($3) + strlen($5);
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "if (%s) {\n\t %s\n }else{\n\t %s}", $2, $3, $5);
@@ -297,11 +334,21 @@ stm : expr { $$ = $1; }
     }
 
 bloco : { }
+        | types FUNC ID PARL ID PARR bloco {
+            int size = 1 + strlen($1) + strlen($3) + strlen($5) + strlen($7);
+            char * s = malloc(sizeof(char) * size);
+            sprintf(s, "%s %s(%s) {\n\t%s\n}\n",$1,$3,$5,$7);
+            free($1);
+            free($3);
+            free($5);
+            free($7);
+            $$ = s;
+        }
         | stmlist {$$ = $1;};
-	
+
 stmlist : stm					{$$ = $1;}
 		| stmlist SEMI stm		{
-            int size = 1 + strlen($1) + strlen($3) + 2;
+            int size = 1 + strlen($1) + strlen($3);
             char * s = malloc(sizeof(char) * size);
             sprintf(s, "%s;%s", $1,$3);
             free($1);
