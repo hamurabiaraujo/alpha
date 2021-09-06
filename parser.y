@@ -335,7 +335,7 @@ stm : expr { $$ = $1; }
 
 bloco : { }
         | types FUNC ID PARL ID PARR bloco {
-            int size = 1 + strlen($1) + strlen($3) + strlen($5) + strlen($7);
+            int size = 9 + strlen($1) + strlen($3) + strlen($5) + strlen($7);
             char * s = malloc(sizeof(char) * size);
             sprintf(s, "%s %s(%s) {\n\t%s\n}\n",$1,$3,$5,$7);
             free($1);
