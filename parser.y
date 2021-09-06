@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h> 
 #include <stdarg.h>
+#include <math.h>
 #include "alpha.h"
 
 nodeType *opr(int oper, int nops, ...); 
@@ -37,36 +38,73 @@ extern char * yytext;
 %token <sValue> ID TYPE STRING CHAR
 %token <iValue> INT
 %token <fValue> FLOAT
-%token PROGRAM ADD MUL REL VAR BOOL THEN ASSING READ WRITE 
+%token <ident> 
+    PROGRAM 
+    ADD 
+    MUL 
+    REL 
+    VAR 
+    BOOL 
+    THEN 
+    ASSING 
+    READ 
+    WRITE
 %token IF ELSE WHILE B_BEGIN B_END SWITCH CASE FOR 
 %token VOID STATIC CONST DEFAULT BREAK CONTINUE EXIT RETURN 
 %token PRINT SCAN MALLOC FREE INCLUDE
 %token INTTOSTR STRTOINT FLOATTOSTR STRTOFLOAT INTTOFLOAT FLOATTOINT 
-%token IQUAL ASSIGN SUMIQ SUBIQ SUMS SUBS NOT AND OR PARL PARR KEYL KEYR SEMI BRAL BRAR VIRGULA
-
+%token <ident> 
+    IQUAL 
+    ASSIGN 
+    SUMIQ 
+    SUBIQ 
+    SUMS 
+    SUBS 
+    NOT 
+    AND 
+    OR 
+    PARL 
+    PARR 
+    KEYL 
+    KEYR 
+    SEMI 
+    BRAL 
+    BRAR 
+    VIRGULA
+    POW
 %left BIGS SMAS IQUALS DIFS BIG SMA
-/*%left '+' '-' 
-%left '*' '/'*/
 %left SUM SUB
 %left MULT DIV
+%left PARR OR AND POW ID
+%right PARL
+%right NOT RETURN
 %nonassoc UMINUS 
-%nonassoc IFX 
+%nonassoc IFX B_END
 %nonassoc ELSE 
 
 %start prog
 
 %type <sValue> stm stmlist expr decls decl ids bloco invoker args opera types
 
-
-
 %%
 
+prog : PROGRAM B_BEGIN decls bloco B_END {
+        int size = 18 + strlen($3) + strlen($4);
+        char * s = malloc(sizeof(char) * size);
+        sprintf(s, "void main() {\n%s\n%s\n}", $3, $4);
+
+        printf("\nAplicação encerrada");
+        free($3);
+        free($4);
+    };
+/*
 prog : decls bloco {
         printf("%s \n%s", $1, $2);
         printf("\nAplicação encerrada");
         free($1);
         free($2);
     };
+    */
 
 decls :  decl       {$$ = $1;}
        | decl decls {
@@ -139,7 +177,7 @@ stm : expr { $$ = $1; }
         $$ = s;
     }
 
-    | WHILE expr B_BEGIN bloco B_END { 
+    | WHILE expr B_BEGIN bloco %prec B_END { 
         int size = 16 + strlen($2) + strlen($4);
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "while (%s) {\n\t %s\n}", $2, $4);
@@ -288,10 +326,31 @@ args : ID {
         $$ = $1;
     };
 
-opera : expr IQUALS expr {
-        int size = 4 + strlen($1) + strlen($3) + 5;
+opera : expr AND expr {
+        int size = 4 + strlen($1) + strlen($3);
+        char * s = malloc(sizeof(char) * size);
+        sprintf(s, "%s && %s", $1,$3);
+        free($3);
+        $$ = s;
+    }
+    | expr OR expr {
+        int size = 4 + strlen($1) + strlen($3);
+        char * s = malloc(sizeof(char) * size);
+        sprintf(s, "%s || %s", $1,$3);
+        free($3);
+        $$ = s;
+    }
+    | expr IQUALS expr {
+        int size = 4 + strlen($1) + strlen($3);
         char * s = malloc(sizeof(char) * size);
         sprintf(s, "%s == %s", $1,$3);
+        free($3);
+        $$ = s;
+    }
+    | expr POW expr {
+        int size = 8 + strlen($1) + strlen($3) ;
+        char * s = malloc(sizeof(char) * size);
+        sprintf(s, "powf(%s, %s)", $1,$3);
         free($3);
         $$ = s;
     }

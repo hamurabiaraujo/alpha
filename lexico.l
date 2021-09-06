@@ -82,6 +82,7 @@
 ";"                       { return(SEMI); }
 "["                       { return(BRAL); } 
 "]"                       { return(BRAR); }
+"^"                       { return(POW); }
 [a-zA-Z][a-zA-Z0-9]*      { yylval.sValue = strdup(yytext); return ID;}
 .                         { yyerror("invalid character");}
 
