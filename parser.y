@@ -75,12 +75,12 @@ extern char * yytext;
 %left BIGS SMAS IQUALS DIFS BIG SMA
 %left SUM SUB
 %left MULT DIV
-%left PARR OR AND POW ID SCAN
+%left PARR OR AND POW ID SCAN FUNC
 %left INTTOSTR STRTOINT FLOATTOSTR STRTOFLOAT INTTOFLOAT FLOATTOINT
 %right PARL VIRGULA
 %right NOT RETURN
 %nonassoc UMINUS 
-%nonassoc IFX B_END
+%nonassoc IFX B_END FUNCX
 %nonassoc ELSE 
 
 %start prog
@@ -199,58 +199,58 @@ ids :  ID           {$$ = $1;}
 stm : expr { $$ = $1; } 
     
     | ID ASSIGN expr {
-        int size = 4 + strlen($1) + strlen($3) + 5;
+        int size = 9 + strlen($1) + strlen($3);
         char * s = malloc(sizeof(char) * size);
-        sprintf(s,"%s = %s%c\n",$1,$3, 59);
+        sprintf(s,"%s = %s;%c\n",$1,$3, 59);
         free($3);
         $$ = s;
     }
 
     | B_BEGIN bloco %prec B_END{
-        int size = 6 + strlen($2);
+        int size = 7 + strlen($2);
         char * s = malloc(sizeof(char) * size);
-        sprintf(s,"{ \n\t %s \n}",$2);
+        sprintf(s,"{ \n\t %s; \n}",$2);
         free($2);
         $$ = s;
     }
 
     | WHILE expr B_BEGIN bloco %prec B_END { 
-        int size = 16 + strlen($2) + strlen($4);
+        int size = 17 + strlen($2) + strlen($4);
         char * s = malloc(sizeof(char) * size);
-        sprintf(s, "while (%s) {\n\t %s\n}", $2, $4);
+        sprintf(s, "while (%s) {\n\t %s;\n}", $2, $4);
         free($4);
         $$ = s;
     }
 	
     | IF expr bloco %prec IFX{ 
-        int size = 13 + strlen($2) + strlen($3);
+        int size = 14 + strlen($2) + strlen($3);
         char * s = malloc(sizeof(char) * size);
-        sprintf(s, "if (%s) {\n\t %s\n}", $2, $3);
+        sprintf(s, "if (%s) {\n\t %s;\n}", $2, $3);
         free($3);
         $$ = s;
     }
 
 	| IF expr bloco ELSE bloco %prec IFX{
-        int size = 24 + strlen($2) + strlen($3) + strlen($5);
+        int size = 26 + strlen($2) + strlen($3) + strlen($5);
         char * s = malloc(sizeof(char) * size);
-        sprintf(s, "if (%s) {\n\t %s\n }else{\n\t %s}", $2, $3, $5);
+        sprintf(s, "if (%s) {\n\t %s;\n }else{\n\t %s;}", $2, $3, $5);
         free($3);
         free($5);
         $$ = s;
     }
 
     | SWITCH ID stm {
-        int size = 15 + strlen($2) + strlen($3);
+        int size = 16 + strlen($2) + strlen($3);
         char * s = malloc(sizeof(char) * size);
-        sprintf(s, "switch (%s) {\n\t %s\n}", $2, $3);
+        sprintf(s, "switch (%s) {\n\t %s;\n}", $2, $3);
         free($3);
         $$ = s;
     }
       
     | CASE stm {
-        int size = 11 + strlen($2);
+        int size = 12 + strlen($2);
         char * s = malloc(sizeof(char) * size);
-        sprintf(s, "case {\n\t %s\n}", $2);
+        sprintf(s, "case {\n\t %s;\n}", $2);
         free($2);
         $$ = s;
     }
@@ -270,9 +270,9 @@ stm : expr { $$ = $1; }
     }
 
     | FOR expr stm {
-        int size = 14 + strlen($2) + strlen($3);
+        int size = 15 + strlen($2) + strlen($3);
         char * s = malloc(sizeof(char) * size);
-        sprintf(s, "for (%s) {\n\t %s\n}", $2, $3);
+        sprintf(s, "for (%s) {\n\t %s;\n}", $2, $3);
         free($3);
         $$ = s;
     }
@@ -334,10 +334,10 @@ stm : expr { $$ = $1; }
     }
 
 bloco : { }
-        | types FUNC ID PARL ID PARR bloco {
-            int size = 9 + strlen($1) + strlen($3) + strlen($5) + strlen($7);
+        | types FUNC ID PARL ID PARR bloco %prec FUNCX{
+            int size = 10 + strlen($1) + strlen($3) + strlen($5) + strlen($7);
             char * s = malloc(sizeof(char) * size);
-            sprintf(s, "%s %s(%s) {\n\t%s\n}\n",$1,$3,$5,$7);
+            sprintf(s, "%s %s(%s) {\n\t %s ;\n}\n",$1,$3,$5,$7);
             free($1);
             free($3);
             free($5);

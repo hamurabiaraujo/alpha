@@ -55,7 +55,7 @@
 "assing"                  { return(ASSING); }
 "read"                    { return(READ); }
 "write"                   { return(WRITE); }
-"func"                    { return(FUNC)}
+"func"                    { return(FUNC);}
 ","                       { return(VIRGULA);}
 "+"                       { return(SUM); }
 "-"                       { return(SUB); }

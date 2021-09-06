@@ -1,5 +1,6 @@
 program
 b_begin
+
     int x
     int y
     int z
