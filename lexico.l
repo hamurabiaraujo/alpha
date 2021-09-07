@@ -4,14 +4,14 @@
     #include <string.h>
     #include <stdlib.h> 
     #include <stdarg.h>
-    #include "alpha.h"
 
     extern int yyerror (char *msg);
 %}
 
 %%
 
-[ \t\n]                   ;
+[ \t]                     ;
+"\n"                      { yylineno++;}
 [0-9]+                    { yylval.iValue = atoi(yytext); return INT;}            
 "program"                 { return(PROGRAM);}
 "type"                    { yylval.sValue = strdup(yytext); return (TYPE); }
@@ -95,4 +95,3 @@
         return 1;
     }
 #endif
-
