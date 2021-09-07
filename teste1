@@ -1,14 +1,23 @@
 program
+
+int soma(int x; int y)
 b_begin
+  return x + y
+b_end
 
-    int x
-    int y
-    int z
+float div(float x; float y)
+b_begin
+	return x / y
+b_end
 
-    scan(x)
-    scan(y)
-    scan(z)
+b_begin
+  int a;
+  int b;
+  int c
 
-    return (x^2 - y + z)
-
+  scan(a + b);
+  scan(b);
+  scan(c);
+  
+  return (a^2+b-c)
 b_end

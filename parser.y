@@ -92,18 +92,21 @@ extern FILE *yyin;
     return
     function
     subprograms
+    if
+    while
+    print
 
 %%
 
 prog : PROGRAM subprograms B_BEGIN decls stmlist B_END {
 
-        printf("\nAplicação encerrada\n");
+        printf("\nAplicação gerada com sucesso!\n");
         
     }
     ;
 
 subprograms :  {}
-            | function subprograms {}
+            | function subprograms {fprintf(file, "{\n\t%s\n}",$2);}
             ;
 
 function : tipo ID PARL decls PARR B_BEGIN stmlist B_END {
@@ -111,8 +114,8 @@ function : tipo ID PARL decls PARR B_BEGIN stmlist B_END {
     }
     ;
 
-decls :  decl {$$ = $1;}
-       | decl SEMI decls {fprintf(file,"%s; \n",$1);}
+decls :  decl {}
+       | decl SEMI decls {}
        ;
 
 decl : tipo ids {fprintf(file,"\t%s \n",$1);}
@@ -122,22 +125,29 @@ ids :  ID             {$$ = $1;}
      | ID VIRGULA ids {fprintf(file,",");}
      ;
 
-stmlist : stm                   {}
+stmlist : stm                   {$$ = $1;}
         | stmlist SEMI stm      {}
         ;
 
-stm :  scan {} 
-     | call {}
-     | return {}
-     | if {}
-     ;
+stm : while {}
+    | if {}
+    | print {}
+    | scan {} 
+    | call {}
+    | return {}
+    ;
 
-return : RETURN expr {
-        fprintf(file,"\n\treturn %s; \n",$2);
-    }
+while : WHILE expr B_BEGIN stmlist B_END {}
+    ;
+
+return : RETURN expr {fprintf(file,"\n\treturn  "); }
     ;     
 
-if : IF PARL expr PARR B_BEGIN stmlist B_END {fprintf(file,"\n\tif (%s) {%s;\n} ; \n",$3,$6);};
+if : IF PARL expr PARR B_BEGIN stmlist B_END {fprintf(file,"\n\tif (%s) {%s;\n} ; \n",$3,$6);}
+    ;
+
+print : PRINT PARL expr PARR {}
+    ;
 
 scan : SCAN PARL expr PARR {fprintf(file,"\tscanf(%s);\n",$3); }
     ;
@@ -157,7 +167,7 @@ args :   expr {fprintf(file,"%s; \n", $1);}
        | expr VIRGULA expr {fprintf(file,",");};
 
 base_expr : ID  {}
-          | call {$$ = $1;}
+          | call {}
           | literal {}
           ;
 
@@ -165,16 +175,16 @@ literal: INT
        ;
 
 expr :  base_expr  {}
-      | PARL expr PARR {}
-      | expr SUM base_expr {}
-      | expr SUB base_expr {}
-      | expr MULT base_expr {}
-      | expr DIV base_expr {}
-      | expr DIFS base_expr {} 
-      | expr IQUALS base_expr {}
-      | expr AND base_expr {}
-      | expr OR base_expr { }
-      | base_expr POW expr {}      
+      | PARL expr PARR {fprintf(file,"%s",$2);}
+      | expr SUM base_expr {fprintf(file,"%s+",$1);}
+      | expr SUB base_expr {fprintf(file,"%s-",$1);}
+      | expr MULT base_expr {fprintf(file,"%s*",$1);}
+      | expr DIV base_expr {fprintf(file,"%s/",$1);}
+      | expr DIFS base_expr {fprintf(file,"%s != ",$1);} 
+      | expr IQUALS base_expr {fprintf(file,"%s == ",$1);}
+      | expr AND base_expr {fprintf(file,"%s &&",$1);}
+      | expr OR base_expr {fprintf(file,"%s || ",$1);}
+      | expr POW base_expr { }      
       ;
 
 %%

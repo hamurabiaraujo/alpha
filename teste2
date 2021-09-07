@@ -1,0 +1,12 @@
+program
+b_begin
+  int a;
+  int b;
+  int c
+
+  scan(a);
+  scan(b);
+  scan(c);
+  
+  return (a^2+b-c)
+b_end
