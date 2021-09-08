@@ -5,6 +5,8 @@
 #include <stdlib.h> 
 #include <stdarg.h>
 #include <math.h>
+//#include "alpha.h"
+
 int yylex(void);
 int yyerror(char* yaccProvidedMessage); 
 FILE *file;
@@ -23,6 +25,7 @@ extern FILE *yyin;
 	int    iValue; 	/* integer value */
     char   sIndex; /* symbol table index */
 	char * sValue;  /* string value */
+//    nodo    nod;
 };
 
 %token <sValue> ID TYPE STRING
@@ -63,6 +66,7 @@ extern FILE *yyin;
     BRAR 
     VIRGULA
     POW
+    PERC
 %left BIGS SMAS IQUALS DIFS BIG SMA
 %left SUM SUB
 %left MULT DIV
@@ -76,7 +80,9 @@ extern FILE *yyin;
 %nonassoc ELSE 
 
 %start prog
-
+//%type <nod>
+//    elem
+//    elemlist
 %type <sValue>
     stm 
     stmlist 
@@ -118,7 +124,7 @@ decls :  decl {}
        | decl SEMI decls {}
        ;
 
-decl : tipo ids {fprintf(file,"\t%s \n",$1);}
+decl : tipo ids {fprintf(file,"%s \n",$1);}
      ;
 
 ids :  ID             {$$ = $1;}
@@ -135,6 +141,10 @@ stm : while {}
     | scan {} 
     | call {}
     | return {}
+    | break {}
+    ;
+
+break : BREAK {fprintf(file,"\n\tbreak;");}
     ;
 
 while : WHILE expr B_BEGIN stmlist B_END {}
@@ -144,12 +154,25 @@ return : RETURN expr {fprintf(file,"\n\treturn  "); }
     ;     
 
 if : IF PARL expr PARR B_BEGIN stmlist B_END {fprintf(file,"\n\tif (%s) {%s;\n} ; \n",$3,$6);}
+    | IF PARL expr PARR B_BEGIN stmlist B_END ELSE B_BEGIN stmlist B_END {fprintf(file,"\n\tif (%s) {\n%s;\n} else {\n%s\n}; \n",$3,$6,$10);}
     ;
 
-print : PRINT PARL expr PARR {}
+print : PRINT PARL expr PARR {fprintf(file,"\n\tprintf (%s); \n",$3);}
     ;
 
-scan : SCAN PARL expr PARR {fprintf(file,"\tscanf(%s);\n",$3); }
+scan : SCAN PARL ID VIRGULA expr PARR {
+    //fprintf(file,"\tscanf("d",&%s);\n",$5);
+    
+    if ( atoi($3) == atoi("i")) 
+        fprintf(file,"\tscanf('%%d',&%s);\n",$5);
+    else if ( atoi($3) == atoi("s")) 
+        fprintf(file,"\tscanf('%%s',&%s);\n",$5);
+    else if ( atoi($3) == atoi("c")) 
+        fprintf(file,"\tscanf('%%c',&%s);\n",$5);
+    else if ( atoi($3) == atoi("f")) 
+        fprintf(file,"\tscanf('%%f',&%s);\n",$5);    
+    else yyerror; 
+    }
     ;
     
 tipo : VOID {fprintf(file,"\nvoid "); }
@@ -160,7 +183,7 @@ tipo : VOID {fprintf(file,"\nvoid "); }
      | BOOL {fprintf(file,"\nbool "); }
      ;
 
-call : ID PARL args PARR {}
+call : ID PARL args PARR {fprintf(file,"(%s) \n", $3);}
        ;
 
 args :   expr {fprintf(file,"%s; \n", $1);}
@@ -171,7 +194,7 @@ base_expr : ID  {}
           | literal {}
           ;
 
-literal: INT
+literal : INT
        ;
 
 expr :  base_expr  {}
@@ -190,7 +213,7 @@ expr :  base_expr  {}
 %%
 
 
-int main (void) {
+int main (int argc, char *argv[]) {
     file = fopen("saida.c","w");
 	return yyparse( );
 }
