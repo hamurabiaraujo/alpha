@@ -120,7 +120,7 @@ function : tipo ID PARL decls PARR B_BEGIN stmlist B_END {
     }
     ;
 
-decls :  decl {fprintf(file, "{ \n");}
+decls :  decl {}
        | decl SEMI decls {}
        ;
 
