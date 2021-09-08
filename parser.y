@@ -105,14 +105,14 @@ extern FILE *yyin;
 %%
 
 prog : PROGRAM subprograms B_BEGIN decls stmlist B_END {
-
+        
         printf("\nAplicação gerada com sucesso!\n");
         
     }
     ;
 
 subprograms :  {}
-            | function subprograms {fprintf(file, "{\n\t%s\n}",$2);}
+            | function subprograms {fprintf(file, "{\n\t%s",$2);}
             ;
 
 function : tipo ID PARL decls PARR B_BEGIN stmlist B_END {
@@ -120,18 +120,18 @@ function : tipo ID PARL decls PARR B_BEGIN stmlist B_END {
     }
     ;
 
-decls :  decl {}
+decls :  decl {fprintf(file, "{ \n");}
        | decl SEMI decls {}
        ;
 
-decl : tipo ids {fprintf(file,"%s \n",$1);}
+decl : tipo ids {fprintf(file,"%s \n",$2);}
      ;
 
 ids :  ID             {$$ = $1;}
      | ID VIRGULA ids {fprintf(file,",");}
      ;
 
-stmlist : stm                   {$$ = $1;}
+stmlist : stm                   {}
         | stmlist SEMI stm      {}
         ;
 
@@ -142,7 +142,14 @@ stm : while {}
     | call {}
     | return {}
     | break {}
+    | switch {}
+    | case {}
     ;
+
+case : CASE ID expr BREAK {}
+    ;
+
+switch : SWITCH ID {}
 
 break : BREAK {fprintf(file,"\n\tbreak;");}
     ;
@@ -150,7 +157,7 @@ break : BREAK {fprintf(file,"\n\tbreak;");}
 while : WHILE expr B_BEGIN stmlist B_END {}
     ;
 
-return : RETURN expr {fprintf(file,"\n\treturn  "); }
+return : RETURN expr {fprintf(file,"\n\treturn (%s); \n }", $2); }
     ;     
 
 if : IF PARL expr PARR B_BEGIN stmlist B_END {fprintf(file,"\n\tif (%s) {%s;\n} ; \n",$3,$6);}
