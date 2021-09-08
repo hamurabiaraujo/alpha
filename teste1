@@ -5,19 +5,14 @@ b_begin
   return x + y
 b_end
 
-float div(float x; float y)
-b_begin
-	return x / y
-b_end
-
 b_begin
   int a;
   int b;
   int c
 
-  scan(a + b);
-  scan(b);
-  scan(c);
+  scan(d, a);
+  scan(d, b);
+  scan(s, c);
   
   return (a^2+b-c)
 b_end

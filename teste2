@@ -4,9 +4,9 @@ b_begin
   int b;
   int c
 
-  scan(a);
-  scan(b);
-  scan(c);
+  scan(i,a);
+  scan(i,b);
+  scan(i,c);
   
   return (a^2+b-c)
 b_end
