@@ -1,0 +1,17 @@
+program
+b_begin
+
+    int x
+
+	while x < 0
+	b_begin
+    		scan(x)
+    		if x < 26
+		b_begin
+			print("esta entre 0 e 25")
+		b_end
+	b_end
+
+    return 0
+
+b_end

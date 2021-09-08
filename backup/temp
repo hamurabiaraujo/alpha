@@ -1,0 +1,106 @@
+
+
+nodeType *opr(int oper, int nops, ...); 
+nodeType *id(int i); 
+nodeType *con(int value); 
+void freeNode(nodeType *p); 
+int ex(nodeType *p);
+
+
+
+#define SIZEOF_NODETYPE ((char *)&p->con - (char *)p)  
+
+nodeType *con(int value) {     
+    nodeType *p;     
+    size_t nodeSize;      
+    
+    /* allocate node */     
+    nodeSize = SIZEOF_NODETYPE + sizeof(conNodeType);     
+    
+    if ((p = malloc(nodeSize)) == NULL)         
+        yyerror("out of memory");      
+        
+    /* copy information */     
+    p->type = typeCon;     
+    p->con.value = value;      
+    return p; 
+}  
+
+nodeType *id(int i) {     
+    nodeType *p;     
+    size_t nodeSize;      
+    /* allocate node */     
+    nodeSize = SIZEOF_NODETYPE + sizeof(idNodeType);
+    if ((p = malloc(nodeSize)) == NULL)    
+         yyerror("out of memory");      
+    
+    /* copy information */     
+    p->type = typeId;     
+    p->id.i = i;      
+    return p; 
+}  
+
+nodeType *opr(int oper, int nops, ...) {     
+    va_list ap;     
+    nodeType *p;     
+    size_t nodeSize;     
+    int i;      
+    
+    /* allocate node */     
+    nodeSize = SIZEOF_NODETYPE + sizeof(oprNodeType) +         
+    (nops - 1) * sizeof(nodeType*);     
+    
+    if ((p = malloc(nodeSize)) == NULL)     
+        yyerror("out of memory");      
+    
+    /* copy information */     
+    p->type = typeOpr;     
+    p->opr.oper = oper;     
+    p->opr.nops = nops;     
+    va_start(ap, nops);     
+    for (i = 0; i < nops; i++)         
+        p->opr.op[i] = va_arg(ap, nodeType*);     
+    
+    va_end(ap);     
+    return p; 
+}
+
+void freeNode(nodeType *p) {     
+    int i;      
+    if (!p) return;     
+    if (p->type == typeOpr) {         
+        for (i = 0; i < p->opr.nops; i++)             
+            freeNode(p->opr.op[i]);     
+    }     
+    free (p); 
+}
+
+________________
+
+int main (int argc, char *argv[]) {
+    FILE *fp;
+    char c;
+    int n = 0;
+
+    if((fp=fopen(argv[1],"r"))==NULL){
+        printf("Erro ao abrir o arquivo");
+    }
+    else
+    {
+        printf("Arquivo aberto com sucesso\n");
+        while((c=fgetc(fp)) != EOF){
+            
+            //if(c=='a' || c=='A')
+                n++;
+        }
+        
+    }
+    return yyparse ( );
+
+    fclose(fp);
+}
+
+int yyerror (char *msg) {
+	fprintf (stderr, "%d: %s at '%s'\n", yylineno, msg, yytext);
+	return 0;
+}

@@ -1,36 +1,26 @@
-#include <stdio.h>
-#include "y.tab.h"
+typedef struct _atrib {
+	char * nome;
+	char * valor;
+	struct _atrib *next;
+} *atrib;
 
-typedef enum { typeCon, typeId, typeOpr } nodeEnum;  
+typedef union _conteudo {
+	char  *texto;
+	struct _nodo *filho;
+} *conteudo;
 
-/* constants */ 
-typedef struct {
-    int value;
-} conNodeType;  
+typedef struct _nodo {
+	char *tagname;
+	atrib atributos;
+	conteudo cont;
+	struct _nodo *next;
+} *nodo;
 
-/* identifiers */ 
-typedef struct {     
-    int i;
-} idNodeType;  
+atrib insereatrib(atrib lst, char *nome, char *valor);
+nodo inserenodo(char * tagname, atrib atributos,conteudo cont,nodo irmao);
+void shownodo(nodo nod);
+void showatrib(atrib nod);
+nodo conc(nodo lst, nodo last);
+char *strtrim(char *s);
 
-/* operators */ 
-typedef struct {     
-    int oper;                   
-    int nops;
-    
-    struct nodeTypeTag *op[1];  
-} oprNodeType;  
-
-typedef struct nodeTypeTag {     
-    nodeEnum type;
-    /* union must be last entry in nodeType */     
-    /* because operNodeType may dynamically increase */     
-    union {       
-        conNodeType con;        
-        idNodeType id;
-        oprNodeType opr;
-    }; 
-} nodeType;  
-
-extern int sym[26]; 
-
+int conta(char* line);

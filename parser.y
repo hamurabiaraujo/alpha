@@ -144,7 +144,10 @@ stm : while {}
     | break {}
     | switch {}
     | case {}
+    | default {}
     ;
+
+default : DEFAULT {fprintf(file,"\n\tdefault;");}
 
 case : CASE ID expr BREAK {}
     ;
@@ -214,7 +217,7 @@ expr :  base_expr  {}
       | expr IQUALS base_expr {fprintf(file,"%s == ",$1);}
       | expr AND base_expr {fprintf(file,"%s &&",$1);}
       | expr OR base_expr {fprintf(file,"%s || ",$1);}
-      | expr POW base_expr { }      
+      | base_expr POW expr { }      
       ;
 
 %%
